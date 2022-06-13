@@ -17,6 +17,14 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+
+@NamedEntityGraph(
+        name = "grafo-tarea-usuario-comentario",
+        attributeNodes = {
+                @NamedAttributeNode("user"),
+                @NamedAttributeNode("comentario")
+        }
+)
 public class Tarea {
 
     @Id @GeneratedValue
@@ -33,7 +41,8 @@ public class Tarea {
     private LocalDateTime fechaFin;
 
     @OneToMany(mappedBy = "tarea")
-    private List<Comentario> comentario;
+    @Builder.Default
+    private List<Comentario> comentario = new ArrayList<>();
 
     @ManyToOne()
     private User user;

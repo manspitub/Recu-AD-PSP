@@ -6,6 +6,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
@@ -15,11 +16,11 @@ import java.time.LocalDateTime;
 @Setter
 public class CreateComentarioDto {
 
+    @NotEmpty(message = "No puede estar vacío")
     private String texto;
 
     private LocalDateTime createdAt;
 
     private Long tareaId;
 
-    private Long userId;
 }

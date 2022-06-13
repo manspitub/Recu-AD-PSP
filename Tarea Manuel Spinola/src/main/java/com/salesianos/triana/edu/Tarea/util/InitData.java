@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -35,43 +36,46 @@ public class InitData {
                 .password("manolito")
                 .build();
 
-        User usuario1 = User.builder()
+
+        NewUserRequest usuario1 = NewUserRequest.builder()
                 .username("manuelST")
                 .password("eyquease")
-                .role(UserRole.USER)
                 .build();
-        userRepository.save(usuario1);
+        userService.newUser(usuario1);
 
-        User usuario2 = User.builder()
+
+        NewUserRequest usuario2 = NewUserRequest.builder()
                 .username("andresillo")
                 .password("eyquease")
-                .role(UserRole.USER)
                 .build();
-        userRepository.save(usuario2);
+        userService.newUser(usuario2);
 
-        User usuario3 = User.builder()
+
+        NewUserRequest usuario3 = NewUserRequest.builder()
                 .username("pepillo")
                 .password("eyquease")
-                .role(UserRole.USER)
                 .build();
-        userRepository.save(usuario3);
+        userService.newUser(usuario3);
 
         userService.newUserAdmin(userAdmin);
 
 
 
+       Optional<User> andresillo= userService.findByUsername("andresillo");
+       Optional<User> pepillo= userService.findByUsername("pepillo");
+       Optional<User> manuelST= userService.findByUsername("manuelST");
 
 
         Comentario c1 = Comentario.builder()
                 .texto("Vaya tela con el ejercicio")
-                .user(usuario2)
+                .user(andresillo.get())
                 .createdAt(LocalDateTime.now())
                 .build();
         comentarioRepository.save(c1);
 
         Comentario c2 = Comentario.builder()
                 .texto("No entiendo nada profe :(")
-                .user(usuario3)
+                .user(pepillo.get())
                 .createdAt(LocalDateTime.now())
                 .build();
         comentarioRepository.save(c2);
@@ -88,7 +92,7 @@ public class InitData {
                 .fechaInicio(LocalDateTime.of(2022, 3, 10, 1, 1, 1))
                 .fechaFin(LocalDateTime.of(2022, 10, 1, 1, 1))
                 .fechaCreacion(LocalDateTime.now())
-                .user(usuario1)
+                .user(manuelST.get())
                 .comentario(coments)
                 .build();
         tareaRepository.save(t1);

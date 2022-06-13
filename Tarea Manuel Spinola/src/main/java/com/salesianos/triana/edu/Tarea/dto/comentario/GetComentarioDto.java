@@ -19,7 +19,7 @@ public class GetComentarioDto {
 
     private LocalDateTime createdAt;
 
-    private Tarea tarea;
+    private String nombreTarea;
 
-    private User user;
+    private String nombreUser;
 }

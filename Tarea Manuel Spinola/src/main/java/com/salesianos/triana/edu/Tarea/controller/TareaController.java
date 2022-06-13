@@ -10,6 +10,7 @@ import com.salesianos.triana.edu.Tarea.model.Comentario;
 import com.salesianos.triana.edu.Tarea.model.Tarea;
 import com.salesianos.triana.edu.Tarea.repo.ComentarioRepository;
 import com.salesianos.triana.edu.Tarea.repo.TareaRepository;
+import com.salesianos.triana.edu.Tarea.services.TareaService;
 import com.salesianos.triana.edu.Tarea.user.model.User;
 import com.salesianos.triana.edu.Tarea.user.model.UserRole;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
@@ -30,6 +33,7 @@ public class TareaController {
 
     private final TareaRepository tareaRepository;
     private final ComentarioRepository comentarioRepository;
+    private final TareaService tareaService;
 
     private final TareaDtoConverter dtoConverter;
     private final ComentarioDtoConverter comentarioDtoConverter;
@@ -58,17 +62,16 @@ public class TareaController {
     public ResponseEntity<List<GetTareaDto>> getTareasMine(@AuthenticationPrincipal User currentUser){
 
 
-            List<GetTareaDto> listaTareas = new ArrayList<>();
 
-            tareaRepository.findAll().stream().forEach(t->{
-                if (t.getUser().equals(currentUser))
-                    listaTareas.add(dtoConverter.tareaToGetTareaDto(t));
-            });
+        List <Tarea> tareasUser = tareaRepository.findByUser(currentUser);
 
-            if (listaTareas.isEmpty())
+            List<GetTareaDto> tareasConvert = tareaService.listaTareaToListaGetTareaDto(tareasUser);
+
+            if (tareasUser.isEmpty())
                 return ResponseEntity.notFound().build();
+            else return ResponseEntity.ok(tareasConvert);
 
-            return ResponseEntity.ok(listaTareas);
+
         }
 
     @GetMapping("tarea/{id}")
@@ -93,10 +96,13 @@ public class TareaController {
     }
 
     @PostMapping("tarea")
-    public ResponseEntity<?> crearTarea(@RequestBody CreateTareaDto tareaACrear, @AuthenticationPrincipal User currentUser){
+    public ResponseEntity<?> crearTarea(@Valid @RequestBody CreateTareaDto tareaACrear, @AuthenticationPrincipal User currentUser){
 
 
             Tarea tar = dtoConverter.createTareaDtoToTarea(tareaACrear);
+
+            tar.setUser(tareaService.addUser(currentUser.getId()));
+
             tareaRepository.save(tar);
             return ResponseEntity.ok(dtoConverter.tareaToGetTareaDto(tar));
 
@@ -175,11 +181,12 @@ public class TareaController {
     }
 
     @PostMapping("tarea/{id}/comentario")
-    public ResponseEntity<?> addComment(@PathVariable Long id, @RequestBody CreateComentarioDto comentCrear){
+    public ResponseEntity<?> addComment(@Valid @PathVariable Long id, @RequestBody CreateComentarioDto comentCrear, @AuthenticationPrincipal User currentUser){
 
         Optional<Tarea> tareaBuscar = tareaRepository.findById(id);
 
         Comentario com = comentarioDtoConverter.createComentarioDtoToComentario(comentCrear);
+        com.setUser(currentUser);
         com.addTarea(tareaBuscar.orElseGet(null));
         comentarioRepository.save(com);
 
@@ -189,20 +196,17 @@ public class TareaController {
     }
 
     @PutMapping("tarea/{idTarea}/comentario/{idComentario}")
-    public ResponseEntity<GetComentarioDto> editComent(@PathVariable Long idTarea, @PathVariable Long idComentario, @RequestBody CreateComentarioDto comentEdit, @AuthenticationPrincipal User currentUser){
+    public ResponseEntity<GetComentarioDto> editComent( @Valid @PathVariable Long idTarea, @PathVariable Long idComentario, @RequestBody CreateComentarioDto comentEdit, @AuthenticationPrincipal User currentUser){
 
         Optional<Tarea> tareaBuscar = tareaRepository.findById(idTarea);
-        Comentario comentBuscar = new Comentario();
+        Optional<Comentario> commentBuscar = comentarioRepository.findById(idComentario);
 
-        tareaBuscar.get().getComentario().stream().forEach(c->{
-            if (c.getId().equals(idComentario))
-                c = comentBuscar;
-        });
 
-        if (currentUser.getRole().equals(UserRole.ADMIN) || comentBuscar.getUser().equals(currentUser)){
-            comentBuscar.setTexto(comentEdit.getTexto());
-            comentarioRepository.save(comentBuscar);
-            return ResponseEntity.ok(comentarioDtoConverter.comentarioToGetComentarioDto(comentBuscar));
+        if (currentUser.getRole().equals(UserRole.ADMIN) || commentBuscar.get().getUser().equals(currentUser)){
+            if (tareaBuscar.get().getComentario().contains(commentBuscar.get()))
+                commentBuscar.get().setTexto(comentEdit.getTexto());
+            comentarioRepository.save(commentBuscar.get());
+            return ResponseEntity.ok(comentarioDtoConverter.comentarioToGetComentarioDto(commentBuscar.get()));
         } else{
             return ResponseEntity.status(FORBIDDEN).build();
         }
@@ -214,17 +218,13 @@ public class TareaController {
     public ResponseEntity<?> deleteComent(@PathVariable Long idTarea, @PathVariable Long idComentario, @AuthenticationPrincipal User currentUser){
 
         Optional<Tarea> tareaBuscar = tareaRepository.findById(idTarea);
-        Comentario comentBuscar = new Comentario();
+        Optional<Comentario> commentBuscar = comentarioRepository.findById(idComentario);
 
-        tareaBuscar.get().getComentario().stream().forEach(c->{
-            if (c.getId().equals(idComentario))
-                c = comentBuscar;
-        });
 
-        if (currentUser.getRole().equals(UserRole.ADMIN) || comentBuscar.getUser().equals(currentUser)){
-            comentarioRepository.delete(comentBuscar);
-        }
-        else {
+        if (currentUser.getRole().equals(UserRole.ADMIN) || commentBuscar.get().getUser().equals(currentUser)){
+            if (tareaBuscar.get().getComentario().contains(commentBuscar.get()))
+                comentarioRepository.delete(commentBuscar.get());
+        } else{
             return ResponseEntity.status(FORBIDDEN).build();
         }
 

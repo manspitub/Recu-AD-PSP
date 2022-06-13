@@ -6,7 +6,6 @@ import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -14,6 +13,9 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+
+
+
 public class Comentario {
 
     @Id @GeneratedValue

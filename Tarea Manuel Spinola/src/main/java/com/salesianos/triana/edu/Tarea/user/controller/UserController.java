@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -29,7 +31,7 @@ public class UserController {
     private final JwtProvider jwtProvider;
 
     @PostMapping("/register")
-    public ResponseEntity<?> newUser(@RequestBody NewUserRequest newUserRequest) {
+    public ResponseEntity<?> newUser(@Valid @RequestBody NewUserRequest newUserRequest) {
         User nuevo = usuarioServicio.newUser(newUserRequest);
 
         String jwt = doLogin(newUserRequest.getUsername(),

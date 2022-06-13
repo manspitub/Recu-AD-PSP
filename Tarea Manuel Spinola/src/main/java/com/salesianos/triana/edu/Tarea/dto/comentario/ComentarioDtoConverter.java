@@ -12,14 +12,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ComentarioDtoConverter {
 
-    private final ComentarioService service;
 
     public Comentario createComentarioDtoToComentario(CreateComentarioDto c){
 
         return Comentario.builder()
                 .createdAt(LocalDateTime.now())
                 .texto(c.getTexto())
-                .user(service.addUser(c.getUserId()))
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -31,7 +29,8 @@ public class ComentarioDtoConverter {
         return GetComentarioDto
                 .builder()
                 .id(c.getId())
-                .tarea(c.getTarea())
+                .nombreTarea(c.getTarea().getTitulo())
+                .nombreUser(c.getUser().getUsername())
                 .texto(c.getTexto())
                 .createdAt(c.getCreatedAt())
                 .build();
