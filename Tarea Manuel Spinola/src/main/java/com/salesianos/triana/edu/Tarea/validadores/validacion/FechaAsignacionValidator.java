@@ -28,9 +28,9 @@ public class FechaAsignacionValidator implements ConstraintValidator<FechaAsigna
 
 
         if (LocalDateTime.now().isAfter(fechaInicio) && LocalDateTime.now().isAfter(fechaFin)){
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
 
     }

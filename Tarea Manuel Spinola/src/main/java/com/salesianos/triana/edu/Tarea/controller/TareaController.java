@@ -109,7 +109,7 @@ public class TareaController {
         }
 
     @PutMapping("tarea/{id}")
-    public ResponseEntity<?> editTarea(@RequestBody CreateTareaDto tareaEdit, @PathVariable Long id, @AuthenticationPrincipal User currentUser){
+    public ResponseEntity<?> editTarea(@Valid @RequestBody CreateTareaDto tareaEdit, @PathVariable Long id, @AuthenticationPrincipal User currentUser){
 
         return tareaRepository.findById(id)
                 .map(t-> {
@@ -181,7 +181,7 @@ public class TareaController {
     }
 
     @PostMapping("tarea/{id}/comentario")
-    public ResponseEntity<?> addComment(@Valid @PathVariable Long id, @RequestBody CreateComentarioDto comentCrear, @AuthenticationPrincipal User currentUser){
+    public ResponseEntity<?> addComment( @PathVariable Long id, @Valid @RequestBody CreateComentarioDto comentCrear, @AuthenticationPrincipal User currentUser){
 
         Optional<Tarea> tareaBuscar = tareaRepository.findById(id);
 
@@ -196,7 +196,7 @@ public class TareaController {
     }
 
     @PutMapping("tarea/{idTarea}/comentario/{idComentario}")
-    public ResponseEntity<GetComentarioDto> editComent( @Valid @PathVariable Long idTarea, @PathVariable Long idComentario, @RequestBody CreateComentarioDto comentEdit, @AuthenticationPrincipal User currentUser){
+    public ResponseEntity<GetComentarioDto> editComent( @Valid @PathVariable Long idTarea, @PathVariable Long idComentario, @Valid @RequestBody CreateComentarioDto comentEdit, @AuthenticationPrincipal User currentUser){
 
         Optional<Tarea> tareaBuscar = tareaRepository.findById(idTarea);
         Optional<Comentario> commentBuscar = comentarioRepository.findById(idComentario);
